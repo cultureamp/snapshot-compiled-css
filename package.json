@@ -1,0 +1,11 @@
+{
+  "name": "style-snapshot",
+  "version": "1.0.0",
+  "description": "A utility to compile a snapshot of all stylesheets for testing major style refactors",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
