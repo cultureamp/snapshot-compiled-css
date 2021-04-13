@@ -1,0 +1,16 @@
+@import "./global.css";
+
+$customColor: var(--custom-color, #00ff00);
+$customColorParams: var(--custom-color--params, 0, 255, 0);
+$customSpace: var(--custom-space, 1.5rem);
+
+.container {
+  // Test rgba() substitution
+  color: rgba($customColorParams, 0.2);
+  .header {
+    // Test normal colour usage
+    color: $customColor;
+    // Test calc
+    margin: calc(#{$customSpace} * 2);
+  }
+}
