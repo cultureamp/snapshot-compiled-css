@@ -38,14 +38,19 @@ export const runCli = async () => {
   logHeader("CSS output");
   console.log(css);
 
-  const previousSnapshotCss = existsSync(snapshotFile)
+  const previousSnapshotExists = existsSync(snapshotFile);
+  const previousSnapshotCss = previousSnapshotExists
     ? readFileSync(snapshotFile).toString()
     : "";
   const matchesSnapshot = previousSnapshotCss === css;
 
   logHeader(`Matches existing snapshot: ${matchesSnapshot}`);
   if (!matchesSnapshot) {
-    await printDiff(snapshotFile, css);
+    if (previousSnapshotExists) {
+      await printDiff(snapshotFile, css);
+    } else {
+      console.log(`No existing snapshot found at ${snapshotFile}`);
+    }
   }
 
   if (cliOptions.update && !matchesSnapshot) {
