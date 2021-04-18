@@ -51,6 +51,10 @@ const lessLoader = {
   },
 };
 
+const fileLoader = {
+  loader: require.resolve("file-loader"),
+};
+
 export const rules = [
   {
     test: /\.(css)$/,
@@ -63,6 +67,10 @@ export const rules = [
   {
     test: /\.less$/,
     use: [styleLoader, extractLoader, cssLoader(2), postCssLoader, lessLoader],
+  },
+  {
+    test: /\.(jpg|jpeg|png|gif|svg|eot|woff|woff2|ttf|swf|ico)$/,
+    use: [fileLoader],
   },
 ];
 
