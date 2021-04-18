@@ -6,11 +6,11 @@
 
 .container {
   // Test rgba() substitution
-  color: rgba(@customColorParams, 0.2);
+  color: ~"rgba(@{customColorParams}, 0.2)";
   .header {
     // Test normal colour usage
     color: @customColor;
     // Test calc
-    margin: calc(@customSpace * 2);
+    margin: ~"calc(@{customSpace} * 2)";
   }
 }
