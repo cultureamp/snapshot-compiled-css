@@ -3,13 +3,13 @@ import OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import webpack from "webpack";
 
 const styleLoader = {
-  loader: "style-loader",
+  loader: require.resolve("style-loader"),
 };
 
 const extractLoader = { loader: MiniCssExtractPlugin.loader };
 
 const cssLoader = (importLoaderCount: number) => ({
-  loader: "css-loader",
+  loader: require.resolve("css-loader"),
   options: {
     importLoaders: importLoaderCount,
     sourceMap: false,
@@ -21,7 +21,7 @@ const cssLoader = (importLoaderCount: number) => ({
 });
 
 const postCssLoader = {
-  loader: "postcss-loader",
+  loader: require.resolve("postcss-loader"),
   options: {
     postcssOptions: {
       plugins: [
@@ -38,14 +38,14 @@ const postCssLoader = {
 };
 
 const sassLoader = {
-  loader: "sass-loader",
+  loader: require.resolve("sass-loader"),
   options: {
     sourceMap: false,
   },
 };
 
 const lessLoader = {
-  loader: "less-loader",
+  loader: require.resolve("less-loader"),
   options: {
     sourceMap: false,
   },
