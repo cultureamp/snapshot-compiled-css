@@ -16,7 +16,8 @@ export const printDiff = (
 
     child.on("exit", (code, signal) => {
       if (signal) {
-        reject(new Error(`Diff failed, received signal ${signal}`));
+        console.warn(`Diff failed, received signal ${signal}`);
+        resolve();
       } else {
         resolve();
       }
