@@ -1,6 +1,6 @@
 {
   "name": "snapshot-compiled-css",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A utility to compile a snapshot of all stylesheets for testing major style refactors",
   "repository": {
     "url": "git@github.com:cultureamp/snapshot-compiled-css.git"
