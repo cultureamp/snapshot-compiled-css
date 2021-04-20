@@ -1,12 +1,12 @@
 import yargs, { options } from "yargs";
-import { logHeader } from "./util";
+import { importExtraWebpackConfig, logHeader } from "./util";
 import { sync as globSync } from "glob";
 import { generatestyleSnapshotos } from "./generateStyleSnapshot";
 import { resolve } from "path";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { printDiff } from "./printDiff";
 
-const cliOptions = yargs
+const cliConfig = yargs
   .option("files", {
     demandOption: true,
     description:
@@ -18,11 +18,35 @@ const cliOptions = yargs
       "Update the current snapshot on disk rather than compare against it",
     type: "boolean",
     default: false,
-  }).argv;
-
-const snapshotFile = resolve(process.cwd(), "snapshot.css");
+  })
+  .option("snapshotFile", {
+    description:
+      "The location of a css file that should be used for comparison and commitment of newer snapshots",
+    type: "string",
+    default: resolve(process.cwd(), "snapshot.css"),
+    coerce: (file) => resolve(file),
+  })
+  .option("webpackConfig", {
+    description:
+      "The location of a module (JS or JSON) that exports a webpack configuration that the snapshot generator should merge with it's base configuration. Uses webpack-merge as the merge method.",
+    type: "string",
+  })
+  .option("sassResources", {
+    description:
+      "Locations to SASS files that contain resources such as global mixins or variables.",
+    type: "array",
+  })
+  .option("showDiff", {
+    description: "Show a diff between the current snapshot and the previous",
+    type: "boolean",
+  });
 
 export const runCli = async () => {
+  const cliOptions = cliConfig.argv;
+  const snapshotFile = cliOptions.snapshotFile;
+  const extraWebpackConfig =
+    cliOptions.webpackConfig &&
+    importExtraWebpackConfig(cliOptions.webpackConfig);
   const filePaths = globSync(cliOptions.files)
     .filter((name) => /\.(css|sass|scss|less)/.test(name))
     .map((path) => `./${path}`);
@@ -33,7 +57,14 @@ export const runCli = async () => {
   logHeader(`Creating a snapshot of ${filePaths.length} files:`);
   console.log(...filePaths.map((path) => `\n    ${path}`));
 
-  const css = await generatestyleSnapshotos(filePaths);
+  const css = await generatestyleSnapshotos({
+    filePaths,
+    extraWebpackConfig: extraWebpackConfig,
+    sassResources:
+      cliOptions.sassResources?.map((resource) =>
+        resolve(process.cwd(), resource.toString())
+      ) || [],
+  });
 
   logHeader("CSS output");
   console.log(css);
@@ -45,7 +76,7 @@ export const runCli = async () => {
   const matchesSnapshot = previousSnapshotCss === css;
 
   logHeader(`Matches existing snapshot: ${matchesSnapshot}`);
-  if (!matchesSnapshot) {
+  if (!matchesSnapshot && cliOptions.showDiff) {
     if (previousSnapshotExists) {
       await printDiff(snapshotFile, css);
     } else {
