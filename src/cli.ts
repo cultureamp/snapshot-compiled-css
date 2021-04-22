@@ -1,10 +1,12 @@
-import yargs, { options } from "yargs";
-import { importExtraWebpackConfig, logHeader } from "./util";
-import { sync as globSync } from "glob";
-import { generatestyleSnapshotos } from "./generateStyleSnapshot";
-import { resolve } from "path";
+#!/usr/bin/env node
+
 import { existsSync, readFileSync, writeFileSync } from "fs";
+import { sync as globSync } from "glob";
+import { resolve } from "path";
+import yargs from "yargs";
+import { generatestyleSnapshotos } from "./generateStyleSnapshot";
 import { printDiff } from "./printDiff";
+import { importExtraWebpackConfig, logHeader } from "./util";
 
 const cliConfig = yargs
   .option("files", {
@@ -91,3 +93,5 @@ export const runCli = async () => {
 
   process.exit(matchesSnapshot ? 0 : 1);
 };
+
+runCli();

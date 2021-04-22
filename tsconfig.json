@@ -1,14 +1,17 @@
 {
-    "compilerOptions": {
-      "lib": ["es2018"],
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "resolveJsonModule": true,
-      "skipLibCheck": true,
-      "noImplicitAny": false,
-      "strict": true,
-      "allowJs": false,
-      "noEmit": false
-    },
-    "exclude": ["**/node_modules"]
-  }
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "allowJs": false,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist"
+  },
+  "include": ["src/index.ts", "src/cli.ts", "types"],
+  "exclude": ["**/node_modules"]
+}

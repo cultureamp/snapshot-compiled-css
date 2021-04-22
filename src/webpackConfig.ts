@@ -76,7 +76,7 @@ export const rules = (sassResources: string[]) => [
       cssLoader(2),
       postCssLoader,
       sassLoader,
-      sassResourcesLoader(sassResources),
+      ...(sassResources.length ? [sassResourcesLoader(sassResources)] : []),
     ],
   },
   {

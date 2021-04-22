@@ -1,25 +1,26 @@
 {
   "name": "snapshot-compiled-css",
-  "version": "1.0.4",
-  "description": "A utility to compile a snapshot of all stylesheets for testing major style refactors",
+  "version": "1.3.0",
+  "description": "A CLI utility, webpack plugin and API to compile a snapshot of all stylesheets for testing major style refactors",
   "repository": {
     "url": "git@github.com:cultureamp/snapshot-compiled-css.git"
   },
   "homepage": "https://github.com/cultureamp/snapshot-compiled-css",
   "scripts": {
-    "snapshotCompiledCss": "yarn -s build && node ./snapshotCompiledCss.js",
-    "build": "tsc && chmod +x ./snapshotCompiledCss.js",
-    "prepare": "yarn -s build ",
-    "test": "yarn -s snapshotCompiledCss --files \"test/**/*.{css,less,scss}\" --sassResources '' "
+    "snapshotCompiledCss": "yarn -s build && node ./dist/cli.js",
+    "build": "tsc && chmod +x ./dist/cli.js",
+    "prepare": "yarn -s build && yarn -s test",
+    "test": "yarn -s snapshotCompiledCss --files \"test/**/*.{css,less,scss}\""
   },
   "files": [
-    "lib/*.js",
-    "snapshotCompiledCss.js"
+    "dist",
+    "src"
   ],
   "bin": {
-    "snapshot-compiled-css": "snapshotCompiledCss.js"
+    "snapshot-compiled-css": "./dist/cli.js"
   },
-  "main": "./snapshotCompiledCss",
+  "main": "./dist/index.js",
+  "types": "./dist/**/*.d.ts",
   "author": "Culture Amp",
   "license": "MIT",
   "devDependencies": {
