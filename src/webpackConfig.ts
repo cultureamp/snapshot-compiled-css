@@ -2,7 +2,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import webpack from "webpack";
 import { merge } from "webpack-merge";
-
+import { snapshotPostcssPlugins } from "./snapshotPostcssPlugins";
 const styleLoader = {
   loader: require.resolve("style-loader"),
 };
@@ -25,15 +25,7 @@ const postCssLoader = {
   loader: require.resolve("postcss-loader"),
   options: {
     postcssOptions: {
-      plugins: [
-        require("postcss-css-variables"),
-        require("postcss-minify-font-values")({
-          removeQuotes: true,
-          removeDuplicates: false,
-        }),
-        require("postcss-discard-comments")({ removeAll: true }),
-        require("postcss-merge-rules"),
-      ],
+      plugins: snapshotPostcssPlugins,
     },
   },
 };

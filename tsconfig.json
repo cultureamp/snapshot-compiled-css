@@ -12,6 +12,6 @@
     "declarationMap": true,
     "outDir": "dist"
   },
-  "include": ["src/index.ts", "src/cli.ts", "types"],
+  "include": ["src/index.ts", "src/cli.ts", "types", "src/sortCli.ts"],
   "exclude": ["**/node_modules"]
 }
