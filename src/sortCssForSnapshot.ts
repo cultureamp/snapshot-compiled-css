@@ -53,7 +53,12 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
   );
 };
 
-export const sortCssForSnapshot = (source: string): string => {
+/**
+ * This function will deeply sort and filter a CSS file so that snapshot diffing is much nicer.
+ * It will re-arrange rules, atrules, and declarations, so that they're in alphabetical order, according to the `getKey` function above.
+ * It will also discard anything other than rules, atrules, or decls (such as comments).
+ */
+export const sortAndFilterCssForSnapshot = (source: string): string => {
   const root = postcss.parse(source);
   const newNodes = deepSortAndFilter(root.nodes);
   root.removeAll();

@@ -3,8 +3,12 @@ import { RawSource } from "webpack-sources";
 import postcss from "postcss";
 import path from "path";
 import { format } from "prettier";
-import { sortCssForSnapshot } from "./sortCssForSnapshot";
+import { sortAndFilterCssForSnapshot } from "./sortCssForSnapshot";
 import { snapshotPostcssPlugins } from "./snapshotPostcssPlugins";
+/**
+ * This is a webpack plugin that you can add to an existing config to generate a`snapshot.css`.
+ * It requires that you've already setup a MiniCssExtractPlugin, because this plugin will only use the outputs of that to make a snapshot.
+ */
 export class SnapshotWebpackPlugin {
   snapshotContent = "";
 
@@ -30,7 +34,9 @@ export class SnapshotWebpackPlugin {
           "snapshot.css"
         );
         compilation.assets[snapshotPath] = new RawSource(
-          format(sortCssForSnapshot(this.snapshotContent), { parser: "css" })
+          format(sortAndFilterCssForSnapshot(this.snapshotContent), {
+            parser: "css",
+          })
         );
       });
     });

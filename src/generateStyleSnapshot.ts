@@ -5,7 +5,7 @@ import { logHeader } from "./util";
 import { dir } from "tmp-promise";
 import { resolve } from "path";
 import { webpackConfig } from "./webpackConfig";
-import { sortCssForSnapshot } from "./sortCssForSnapshot";
+import { sortAndFilterCssForSnapshot } from "./sortCssForSnapshot";
 
 const tmpCssFilename = "snapshot-tmp.css";
 const tmpJsFilename = "snapshot-tmp.js";
@@ -70,7 +70,7 @@ export const compileWebpack = ({
 
 const runPostWebpackActionsOnCss = (css: string) => {
   logHeader("Formatting the CSS with prettier");
-  const sortedCss = sortCssForSnapshot(css);
+  const sortedCss = sortAndFilterCssForSnapshot(css);
   const prettyCss = prettier.format(sortedCss, {
     parser: "css",
   });
