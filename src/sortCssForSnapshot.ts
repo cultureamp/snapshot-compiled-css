@@ -1,42 +1,61 @@
 import flatten from "lodash/flatten";
-import postcss, { AtRule, ChildNode, Rule } from "postcss";
+import postcss, { AtRule, ChildNode, Declaration, Rule } from "postcss";
 
-const getKey = (node: Rule | AtRule) =>
-  node.type === "rule" ? node.selector : `@${node.name} ${node.params}`;
-const sortAndFilterNodes = (nodes: ChildNode[]) => {
-  const rules = new Map<string, Rule[]>();
-  const atRules = new Map<string, AtRule[]>();
+type NodesWeCareAbout = Rule | AtRule | Declaration;
+const getKeyOfSingleNode = (node: NodesWeCareAbout) =>
+  node.type === "rule"
+    ? node.selector
+    : node.type === "decl"
+    ? node.prop
+    : `@${node.name} ${node.params}`;
+const getKeyOfNodes = (nodes: ChildNode[]): string =>
+  nodes
+    .map((child) => {
+      if (child.type === "decl") {
+        return getKeyOfSingleNode(child);
+      } else if (child.type === "rule" || child.type === "atrule") {
+        return `${getKeyOfSingleNode(child)}${getKeyOfNodes(
+          child.nodes || []
+        )}}`;
+      }
+      return "";
+    })
+    .join("");
 
-  nodes.forEach((node) => {
-    if (node.type === "rule") {
-      const key = getKey(node);
-      rules.set(key, (rules.get(key) || []).concat(node));
-    }
-    if (node.type === "atrule") {
-      const childrenKey = node.nodes?.length
-        ? sortAndFilterNodes(node.nodes).map(getKey).join("")
-        : "";
-      const key = `${getKey(node)}${childrenKey}`;
-      atRules.set(key, (atRules.get(key) || []).concat(node));
-    }
-  });
+const getKey = (node: NodesWeCareAbout) =>
+  node.type === "decl"
+    ? getKeyOfSingleNode(node)
+    : `${getKeyOfSingleNode(node)}${getKeyOfNodes(node.nodes || [])}`;
 
-  const sortedRules = flatten(
-    Array.from(rules.keys())
-      .sort((a, z) => a.localeCompare(z))
-      .map((key) => rules.get(key) || [])
+const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
+  return (
+    childNodes
+      // Select only the nodes we care about
+      .filter(
+        (node): node is Declaration | AtRule | Rule =>
+          node.type === "decl" || node.type === "atrule" || node.type === "rule"
+      )
+      // Run the same sorting function on each set of children
+      .map((node) => {
+        if ("nodes" in node && node.nodes) {
+          return node.clone({ nodes: deepSortAndFilter(node.nodes) });
+        } else {
+          return node;
+        }
+      })
+      // Map and sort by key
+      .map((node) => ({ key: getKey(node), node }))
+      .sort((a, z) => {
+        return a.key.localeCompare(z.key);
+      })
+      // Cleanup - just return an array of nodes
+      .map((node) => node.node)
   );
-  const sortedAtRules = flatten(
-    Array.from(atRules.keys())
-      .sort((a, z) => a.localeCompare(z))
-      .map((key) => atRules.get(key) || [])
-  );
-
-  return [...sortedAtRules, ...sortedRules];
 };
+
 export const sortCssForSnapshot = (source: string): string => {
   const root = postcss.parse(source);
-  const newNodes = sortAndFilterNodes(root.nodes);
+  const newNodes = deepSortAndFilter(root.nodes);
   root.removeAll();
   root.append(newNodes);
   return root.toString();
