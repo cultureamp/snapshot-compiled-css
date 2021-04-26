@@ -1,31 +1,43 @@
 import flatten from "lodash/flatten";
-import postcss, { AtRule, Rule } from "postcss";
+import postcss, { AtRule, ChildNode, Rule } from "postcss";
 
-export const sortCssForSnapshot = (source: string): string => {
-  const root = postcss.parse(source);
-
+const getKey = (node: Rule | AtRule) =>
+  node.type === "rule" ? node.selector : `@${node.name} ${node.params}`;
+const sortAndFilterNodes = (nodes: ChildNode[]) => {
   const rules = new Map<string, Rule[]>();
   const atRules = new Map<string, AtRule[]>();
-  root.walkRules((rule) => {
-    const key = rule.selector;
-    rules.set(key, (rules.get(key) || []).concat(rule));
-    rule.remove();
+
+  nodes.forEach((node) => {
+    if (node.type === "rule") {
+      const key = getKey(node);
+      rules.set(key, (rules.get(key) || []).concat(node));
+    }
+    if (node.type === "atrule") {
+      const childrenKey = node.nodes?.length
+        ? sortAndFilterNodes(node.nodes).map(getKey).join("")
+        : "";
+      const key = `${getKey(node)}${childrenKey}`;
+      atRules.set(key, (atRules.get(key) || []).concat(node));
+    }
   });
-  root.walkAtRules((rule) => {
-    const key = `@${rule.name} ${rule.params}`;
-    atRules.set(key, (atRules.get(key) || []).concat(rule));
-    rule.remove();
-  });
+
   const sortedRules = flatten(
     Array.from(rules.keys())
       .sort((a, z) => a.localeCompare(z))
       .map((key) => rules.get(key) || [])
   );
   const sortedAtRules = flatten(
-    Array.from(rules.keys())
+    Array.from(atRules.keys())
       .sort((a, z) => a.localeCompare(z))
       .map((key) => atRules.get(key) || [])
   );
-  root.append([...sortedAtRules, ...sortedRules]);
+
+  return [...sortedAtRules, ...sortedRules];
+};
+export const sortCssForSnapshot = (source: string): string => {
+  const root = postcss.parse(source);
+  const newNodes = sortAndFilterNodes(root.nodes);
+  root.removeAll();
+  root.append(newNodes);
   return root.toString();
 };

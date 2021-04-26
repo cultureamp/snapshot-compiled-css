@@ -5,6 +5,7 @@ import { logHeader } from "./util";
 import { dir } from "tmp-promise";
 import { resolve } from "path";
 import { webpackConfig } from "./webpackConfig";
+import { sortCssForSnapshot } from "./sortCssForSnapshot";
 
 const tmpCssFilename = "snapshot-tmp.css";
 const tmpJsFilename = "snapshot-tmp.js";
@@ -15,26 +16,20 @@ const tmpJsFilename = "snapshot-tmp.js";
  */
 export const generatestyleSnapshotos = async ({
   filePaths,
-  extraWebpackConfig: extraConfig,
-  sassResources,
 }: {
   filePaths: string[];
-  extraWebpackConfig?: webpack.Configuration;
-  sassResources: string[];
 }) => {
   const dirResult = await dir({ unsafeCleanup: true });
   const outputDir = dirResult.path;
   await compileWebpack({
     outputDir: dirResult.path,
     inputStylesheets: filePaths,
-    extraConfig,
-    sassResources,
   });
   const path = resolve(outputDir, tmpCssFilename);
   const css = fs.readFileSync(path).toString();
   await dirResult.cleanup();
-  const prettyCss = runPrettierOnCss(css);
-  return prettyCss;
+  const postProcessed = runPostWebpackActionsOnCss(css);
+  return postProcessed;
 };
 
 /**
@@ -43,13 +38,9 @@ export const generatestyleSnapshotos = async ({
 export const compileWebpack = ({
   outputDir,
   inputStylesheets,
-  extraConfig,
-  sassResources,
 }: {
   outputDir: string;
   inputStylesheets: string[];
-  extraConfig?: webpack.Configuration;
-  sassResources: string[];
 }): Promise<void> => {
   return new Promise((resolvePromise, rejectPromise) => {
     webpack(
@@ -58,8 +49,6 @@ export const compileWebpack = ({
         tmpJsFilename,
         inputStylesheets,
         outputDir,
-        extraConfig,
-        sassResources,
       })
     ).run((err, stats) => {
       if (!err && !stats.hasErrors()) {
@@ -79,9 +68,10 @@ export const compileWebpack = ({
   });
 };
 
-const runPrettierOnCss = (css: string) => {
+const runPostWebpackActionsOnCss = (css: string) => {
   logHeader("Formatting the CSS with prettier");
-  const prettyCss = prettier.format(css, {
+  const sortedCss = sortCssForSnapshot(css);
+  const prettyCss = prettier.format(sortedCss, {
     parser: "css",
   });
   console.log("done");

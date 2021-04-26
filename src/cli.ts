@@ -6,7 +6,7 @@ import { resolve } from "path";
 import yargs from "yargs";
 import { generatestyleSnapshotos } from "./generateStyleSnapshot";
 import { printDiff } from "./printDiff";
-import { importExtraWebpackConfig, logHeader } from "./util";
+import { logHeader } from "./util";
 
 const cliConfig = yargs
   .option("files", {
@@ -28,16 +28,6 @@ const cliConfig = yargs
     default: resolve(process.cwd(), "snapshot.css"),
     coerce: (file) => resolve(file),
   })
-  .option("webpackConfig", {
-    description:
-      "The location of a module (JS or JSON) that exports a webpack configuration that the snapshot generator should merge with it's base configuration. Uses webpack-merge as the merge method.",
-    type: "string",
-  })
-  .option("sassResources", {
-    description:
-      "Locations to SASS files that contain resources such as global mixins or variables.",
-    type: "array",
-  })
   .option("showDiff", {
     description: "Show a diff between the current snapshot and the previous",
     type: "boolean",
@@ -46,9 +36,6 @@ const cliConfig = yargs
 export const runCli = async () => {
   const cliOptions = cliConfig.argv;
   const snapshotFile = cliOptions.snapshotFile;
-  const extraWebpackConfig =
-    cliOptions.webpackConfig &&
-    importExtraWebpackConfig(cliOptions.webpackConfig);
   const filePaths = globSync(cliOptions.files)
     .filter((name) => /\.(css|sass|scss|less)/.test(name))
     .map((path) => `./${path}`);
@@ -61,11 +48,6 @@ export const runCli = async () => {
 
   const css = await generatestyleSnapshotos({
     filePaths,
-    extraWebpackConfig: extraWebpackConfig,
-    sassResources:
-      cliOptions.sassResources?.map((resource) =>
-        resolve(process.cwd(), resource.toString())
-      ) || [],
   });
 
   logHeader("CSS output");

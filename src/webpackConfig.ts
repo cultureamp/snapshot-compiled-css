@@ -1,7 +1,6 @@
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import webpack from "webpack";
-import { merge } from "webpack-merge";
 import { snapshotPostcssPlugins } from "./snapshotPostcssPlugins";
 const styleLoader = {
   loader: require.resolve("style-loader"),
@@ -48,28 +47,14 @@ const fileLoader = {
   loader: require.resolve("file-loader"),
 };
 
-const sassResourcesLoader = (resources: string[]) => ({
-  loader: "sass-resources-loader",
-  options: {
-    resources,
-  },
-});
-
-export const rules = (sassResources: string[]) => [
+export const rules = () => [
   {
     test: /\.(css)$/,
     use: [styleLoader, extractLoader, cssLoader(1), postCssLoader],
   },
   {
     test: /\.(scss|sass)$/,
-    use: [
-      styleLoader,
-      extractLoader,
-      cssLoader(2),
-      postCssLoader,
-      sassLoader,
-      ...(sassResources.length ? [sassResourcesLoader(sassResources)] : []),
-    ],
+    use: [styleLoader, extractLoader, cssLoader(2), postCssLoader, sassLoader],
   },
   {
     test: /\.less$/,
@@ -86,31 +71,23 @@ export const webpackConfig = ({
   tmpCssFilename,
   tmpJsFilename,
   outputDir,
-  extraConfig,
-  sassResources,
 }: {
   inputStylesheets: string[];
   tmpCssFilename: string;
   tmpJsFilename: string;
   outputDir: string;
-  extraConfig?: webpack.Configuration;
-  sassResources: string[];
-}): webpack.Configuration => {
-  const mergedConfig = merge(extraConfig || {}, {
-    entry: inputStylesheets,
-    mode: "development",
-    module: { rules: rules(sassResources) },
-    devtool: false,
-    plugins: [new MiniCssExtractPlugin({ filename: tmpCssFilename })],
-    output: {
-      path: outputDir,
-      filename: tmpJsFilename,
-    },
-    optimization: {
-      minimize: true,
-      minimizer: [new OptimizeCSSAssetsPlugin()],
-    },
-  });
-
-  return mergedConfig;
-};
+}): webpack.Configuration => ({
+  entry: inputStylesheets,
+  mode: "development",
+  module: { rules: rules() },
+  devtool: false,
+  plugins: [new MiniCssExtractPlugin({ filename: tmpCssFilename })],
+  output: {
+    path: outputDir,
+    filename: tmpJsFilename,
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [new OptimizeCSSAssetsPlugin()],
+  },
+});

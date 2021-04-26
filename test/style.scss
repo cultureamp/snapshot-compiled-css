@@ -14,3 +14,20 @@ $customSpace: var(--custom-space, 1.5rem);
     margin: calc(#{$customSpace} * 2);
   }
 }
+
+@media (min-width: 720px) {
+  a {
+    color: blue;
+  }
+
+  b {
+    background-color: red;
+  }
+  .container {
+    color: green;
+  }
+
+  .header {
+    color: red;
+  }
+}

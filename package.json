@@ -10,7 +10,8 @@
     "snapshotCompiledCss": "yarn -s build && node ./dist/cli.js",
     "build": "tsc && chmod +x ./dist/cli.js",
     "prepare": "yarn -s build && yarn -s test",
-    "test": "yarn -s snapshotCompiledCss --files \"test/**/*.{css,less,scss}\""
+    "test": "yarn -s snapshotCompiledCss --files \"test/**/*.{css,less,scss}\"",
+    "updateTestSnapshot": "yarn test --update"
   },
   "files": [
     "dist",
@@ -37,6 +38,7 @@
     "css-loader": "^5.2.1",
     "cssnano": "^5.0.0",
     "file-loader": "^6.2.0",
+    "html-comment-regex": "^1.1.2",
     "less": "^2.4.0",
     "less-loader": "^4.1.0",
     "lodash": "^4.17.21",
@@ -52,11 +54,9 @@
     "postcss-sorting": "^6.0.0",
     "prettier": "^2.2.1",
     "sass-loader": "^10.0.0",
-    "sass-resources-loader": "^2.2.1",
     "style-loader": "^2.0.0",
     "tmp-promise": "^3.0.2",
     "webpack": "^4.0.0",
-    "webpack-merge": "^5.7.3",
     "yargs": "^16.2.0"
   }
 }

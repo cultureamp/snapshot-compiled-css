@@ -4,6 +4,7 @@ import postcss from "postcss";
 import path from "path";
 import { format } from "prettier";
 import { sortCssForSnapshot } from "./sortCssForSnapshot";
+import { snapshotPostcssPlugins } from "./snapshotPostcssPlugins";
 export class SnapshotWebpackPlugin {
   snapshotContent = "";
 
@@ -34,7 +35,4 @@ export class SnapshotWebpackPlugin {
       });
     });
   }
-}
-function snapshotPostcssPlugins(snapshotPostcssPlugins: any) {
-  throw new Error("Function not implemented.");
 }
