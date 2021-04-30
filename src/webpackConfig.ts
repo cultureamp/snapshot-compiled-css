@@ -25,6 +25,7 @@ const postCssLoader = {
   options: {
     postcssOptions: {
       plugins: snapshotPostcssPlugins,
+      config: false,
     },
   },
 };
