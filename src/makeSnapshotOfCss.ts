@@ -1,5 +1,46 @@
-import flatten from "lodash/flatten";
-import postcss, { AtRule, ChildNode, Declaration, Rule } from "postcss";
+import postcss, {
+  AtRule,
+  ChildNode,
+  Declaration,
+  Node,
+  Result,
+  Rule,
+} from "postcss";
+import { transformDecl } from "./functionTransformer";
+import transformCalc from "postcss-calc/dist/lib/transform";
+
+const replaceVarWithFallback = (_name: string, ...params: string[]) => {
+  const [_identifier, ...fallback] = params;
+  if (fallback) {
+    return fallback.join(", ");
+  } else {
+    return `var(${params.join(", ")})`;
+  }
+};
+const transformNode = (node: AtRule | Declaration | Rule) => {
+  let newNode = node;
+  if (node.type === "decl") {
+    try {
+      newNode = node.clone({
+        value: transformDecl(node.value, {
+          var: replaceVarWithFallback,
+        }),
+      });
+    } catch (e) {
+      console.error(`Couldn't transform functions in: \`${node.toString()}\``);
+      console.error(e.toString());
+    }
+
+    try {
+      transformCalc(newNode, "value", { precision: 5 });
+    } catch (e) {
+      console.error(`Couldn't evaluate calc in: \`${node.toString()}\``);
+      console.error(e.toString());
+    }
+  }
+
+  return newNode;
+};
 
 type NodesWeCareAbout = Rule | AtRule | Declaration;
 const getKeyOfSingleNode = (node: NodesWeCareAbout) =>
@@ -40,7 +81,7 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
         if ("nodes" in node && node.nodes) {
           return node.clone({ nodes: deepSortAndFilter(node.nodes) });
         } else {
-          return node;
+          return transformNode(node);
         }
       })
       // Map and sort by key
@@ -54,14 +95,17 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
 };
 
 /**
- * This function will deeply sort and filter a CSS file so that snapshot diffing is much nicer.
+ * This function will deeply sort, filter, and transform a CSS source string.
  * It will re-arrange rules, atrules, and declarations, so that they're in alphabetical order, according to the `getKey` function above.
- * It will also discard anything other than rules, atrules, or decls (such as comments).
+ * It will discard anything other than rules, atrules, or decls (such as comments).
+ * It will also transform declarations:
+ *  - Compile CSS variables into values.
+ *  - Compute calc() functions and inline result.
  */
-export const sortAndFilterCssForSnapshot = (source: string): string => {
-  const root = postcss.parse(source);
+export const makeSnapshotOfCss = (cssSource: string): string => {
+  const root = postcss.parse(cssSource);
   const newNodes = deepSortAndFilter(root.nodes);
   root.removeAll();
   root.append(newNodes);
-  return root.toString();
+  return root.toString().replace(/(\s)+/, "$1");
 };

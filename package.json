@@ -39,7 +39,7 @@
     "cssnano": "^5.0.0",
     "file-loader": "^6.2.0",
     "html-comment-regex": "^1.1.2",
-    "less": "^2.4.0",
+    "less": "^3.13.0",
     "less-loader": "^4.1.0",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^1.4.1",

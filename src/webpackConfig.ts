@@ -1,7 +1,6 @@
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import webpack from "webpack";
-import { snapshotPostcssPlugins } from "./snapshotPostcssPlugins";
 const styleLoader = {
   loader: require.resolve("style-loader"),
 };
@@ -20,16 +19,6 @@ const cssLoader = (importLoaderCount: number) => ({
   },
 });
 
-const postCssLoader = {
-  loader: require.resolve("postcss-loader"),
-  options: {
-    postcssOptions: {
-      plugins: snapshotPostcssPlugins,
-      config: false,
-    },
-  },
-};
-
 const sassLoader = {
   loader: require.resolve("sass-loader"),
   options: {
@@ -39,9 +28,6 @@ const sassLoader = {
 
 const lessLoader = {
   loader: require.resolve("less-loader"),
-  options: {
-    sourceMap: false,
-  },
 };
 
 const fileLoader = {
@@ -51,15 +37,15 @@ const fileLoader = {
 export const rules = () => [
   {
     test: /\.(css)$/,
-    use: [styleLoader, extractLoader, cssLoader(1), postCssLoader],
+    use: [styleLoader, extractLoader, cssLoader(1)],
   },
   {
     test: /\.(scss|sass)$/,
-    use: [styleLoader, extractLoader, cssLoader(2), postCssLoader, sassLoader],
+    use: [styleLoader, extractLoader, cssLoader(2), sassLoader],
   },
   {
     test: /\.less$/,
-    use: [styleLoader, extractLoader, cssLoader(2), postCssLoader, lessLoader],
+    use: [styleLoader, extractLoader, cssLoader(2), lessLoader],
   },
   {
     test: /\.(jpg|jpeg|png|gif|svg|eot|woff|woff2|ttf|swf|ico)$/,

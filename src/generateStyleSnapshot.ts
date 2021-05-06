@@ -5,7 +5,7 @@ import { logHeader } from "./util";
 import { dir } from "tmp-promise";
 import { resolve } from "path";
 import { webpackConfig } from "./webpackConfig";
-import { sortAndFilterCssForSnapshot } from "./sortCssForSnapshot";
+import { makeSnapshotOfCss } from "./makeSnapshotOfCss";
 
 const tmpCssFilename = "snapshot-tmp.css";
 const tmpJsFilename = "snapshot-tmp.js";
@@ -14,7 +14,7 @@ const tmpJsFilename = "snapshot-tmp.js";
  * @param filePaths The stylesheets to include in the snapshot compilation
  * @returns The generated and prettified CSS source code
  */
-export const generatestyleSnapshotos = async ({
+export const generateStyleSnapshot = async ({
   filePaths,
 }: {
   filePaths: string[];
@@ -69,8 +69,8 @@ export const compileWebpack = ({
 };
 
 const runPostWebpackActionsOnCss = (css: string) => {
-  logHeader("Formatting the CSS with prettier");
-  const sortedCss = sortAndFilterCssForSnapshot(css);
+  logHeader("Transforming and formatting the CSS with prettier");
+  const sortedCss = makeSnapshotOfCss(css);
   const prettyCss = prettier.format(sortedCss, {
     parser: "css",
   });

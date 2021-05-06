@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import { sync as globSync } from "glob";
 import { resolve } from "path";
 import yargs from "yargs";
-import { generatestyleSnapshotos } from "./generateStyleSnapshot";
+import { generateStyleSnapshot } from "./generateStyleSnapshot";
 import { printDiff } from "./printDiff";
 import { logHeader } from "./util";
 
@@ -46,7 +46,7 @@ export const runCli = async () => {
   logHeader(`Creating a snapshot of ${filePaths.length} files:`);
   console.log(...filePaths.map((path) => `\n    ${path}`));
 
-  const css = await generatestyleSnapshotos({
+  const css = await generateStyleSnapshot({
     filePaths,
   });
 
