@@ -1,11 +1,4 @@
-import postcss, {
-  AtRule,
-  ChildNode,
-  Declaration,
-  Node,
-  Result,
-  Rule,
-} from "postcss";
+import postcss, { AtRule, ChildNode, Declaration, Rule } from "postcss";
 import { transformDecl } from "./functionTransformer";
 import transformCalc from "postcss-calc/dist/lib/transform";
 
@@ -101,6 +94,16 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
  * It will also transform declarations:
  *  - Compile CSS variables into values.
  *  - Compute calc() functions and inline result.
+ *
+ * You might be wondering: why do this and not use out of the box postcss plugins that could do the same thing?
+ * The short answer is: for finer control and transparency over the process.
+ * Upon testing this snapshot generator on large repositories, sometimes plugins like postcss-calc would fail without any warnings,
+ * and end up removing chunks of CSS in the snapshot due to one invalid `calc()` usage.
+ * In this, we wrap the `calc()` compilation in a try catch.
+ *
+ * The other reason is because we need very deterministic sorting of Rules, AtRules and Declarations, so that snapshots are much more diffable.
+ * Out of the box plugins could not offer this level of sorting and determinism (even if you ordered the plugin pipeline correctly, the snapshot's CSS would still be out of order sometimes).
+ *
  */
 export const makeSnapshotOfCss = (cssSource: string): string => {
   const root = postcss.parse(cssSource);
