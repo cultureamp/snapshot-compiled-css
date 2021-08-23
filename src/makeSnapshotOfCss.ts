@@ -2,6 +2,13 @@ import postcss, { AtRule, ChildNode, Declaration, Rule } from "postcss";
 import { transformDecl } from "./functionTransformer";
 import transformCalc from "postcss-calc/dist/lib/transform";
 
+export type SnapshotOptions = {
+  /** Opt out of CSS var function replacements with their fallbacks */
+  disableCssVar?: boolean;
+  /** Opt out of compiling calc functions */
+  disableCalc?: boolean;
+};
+
 const replaceVarWithFallback = (_name: string, ...params: string[]) => {
   const [_identifier, ...fallback] = params;
   if (fallback) {
@@ -10,25 +17,34 @@ const replaceVarWithFallback = (_name: string, ...params: string[]) => {
     return `var(${params.join(", ")})`;
   }
 };
-const transformNode = (node: AtRule | Declaration | Rule) => {
+const transformNode = (
+  node: AtRule | Declaration | Rule,
+  opts?: SnapshotOptions
+) => {
   let newNode = node;
   if (node.type === "decl") {
-    try {
-      newNode = node.clone({
-        value: transformDecl(node.value, {
-          var: replaceVarWithFallback,
-        }),
-      });
-    } catch (e) {
-      console.error(`Couldn't transform functions in: \`${node.toString()}\``);
-      console.error(e.toString());
+    if (!opts?.disableCssVar) {
+      try {
+        newNode = node.clone({
+          value: transformDecl(node.value, {
+            var: replaceVarWithFallback,
+          }),
+        });
+      } catch (e) {
+        console.error(
+          `Couldn't transform functions in: \`${node.toString()}\``
+        );
+        console.error(e.toString());
+      }
     }
 
-    try {
-      transformCalc(newNode, "value", { precision: 5 });
-    } catch (e) {
-      console.error(`Couldn't evaluate calc in: \`${node.toString()}\``);
-      console.error(e.toString());
+    if (!opts?.disableCalc) {
+      try {
+        transformCalc(newNode, "value", { precision: 5 });
+      } catch (e) {
+        console.error(`Couldn't evaluate calc in: \`${node.toString()}\``);
+        console.error(e.toString());
+      }
     }
   }
 
@@ -61,7 +77,10 @@ const getKey = (node: NodesWeCareAbout) =>
     ? getKeyOfSingleNode(node)
     : `${getKeyOfSingleNode(node)}${getKeyOfNodes(node.nodes || [])}`;
 
-const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
+const deepSortAndFilter = (
+  childNodes: ChildNode[],
+  opts?: SnapshotOptions
+): NodesWeCareAbout[] => {
   return (
     childNodes
       // Select only the nodes we care about
@@ -74,7 +93,7 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
         if ("nodes" in node && node.nodes) {
           return node.clone({ nodes: deepSortAndFilter(node.nodes) });
         } else {
-          return transformNode(node);
+          return transformNode(node, opts);
         }
       })
       // Map and sort by key
@@ -105,9 +124,12 @@ const deepSortAndFilter = (childNodes: ChildNode[]): NodesWeCareAbout[] => {
  * Out of the box plugins could not offer this level of sorting and determinism (even if you ordered the plugin pipeline correctly, the snapshot's CSS would still be out of order sometimes).
  *
  */
-export const makeSnapshotOfCss = (cssSource: string): string => {
+export const makeSnapshotOfCss = (
+  cssSource: string,
+  opts?: SnapshotOptions
+): string => {
   const root = postcss.parse(cssSource);
-  const newNodes = deepSortAndFilter(root.nodes);
+  const newNodes = deepSortAndFilter(root.nodes, opts);
   root.removeAll();
   root.append(newNodes);
   return root.toString().replace(/(\s)+/, "$1");
