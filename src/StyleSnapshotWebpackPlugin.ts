@@ -2,13 +2,15 @@ import webpack from "webpack";
 import { RawSource } from "webpack-sources";
 import path from "path";
 import { format } from "prettier";
-import { makeSnapshotOfCss } from "./makeSnapshotOfCss";
+import { makeSnapshotOfCss, SnapshotOptions } from "./makeSnapshotOfCss";
 /**
  * This is a webpack plugin that you can add to an existing config to generate a`snapshot.css`.
  * It requires that you've already setup a MiniCssExtractPlugin, because this plugin will only use the outputs of that to make a snapshot.
  */
 export class StyleSnapshotWebpackPlugin {
   snapshotContent = "";
+
+  constructor(public options?: SnapshotOptions) {}
 
   apply(compiler: webpack.Compiler) {
     const pluginName = StyleSnapshotWebpackPlugin.name;
@@ -28,7 +30,7 @@ export class StyleSnapshotWebpackPlugin {
           "snapshot.css"
         );
         compilation.assets[snapshotPath] = new RawSource(
-          format(makeSnapshotOfCss(this.snapshotContent), {
+          format(makeSnapshotOfCss(this.snapshotContent, this.options), {
             parser: "css",
           })
         );
