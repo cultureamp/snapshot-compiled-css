@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: snapshot-compiled-css
   description: > 
-    Webpack plugin - snapshot-compiled-css
+    A webpack plugin for verifying compiled CSS does not contain unexpected changes.
   tags:
     - users-na
     - camp-foundations
