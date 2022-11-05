@@ -40,7 +40,7 @@
     "file-loader": "^6.2.0",
     "html-comment-regex": "^1.1.2",
     "less": "^3.13.0",
-    "less-loader": "^4.1.0",
+    "less-loader": "^6.0.0",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^1.4.1",
     "node-sass": "^5.0.0",
@@ -56,7 +56,7 @@
     "sass-loader": "^10.0.0",
     "style-loader": "^2.0.0",
     "tmp-promise": "^3.0.2",
-    "webpack": "^4.0.0",
+    "webpack": "^5.0.0",
     "yargs": "^16.2.0"
   }
 }
